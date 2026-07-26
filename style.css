@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* تنسيقات عامة إضافية للخطوط وتجربة المستخدم */
+body {
+    font-family: 'Cairo', sans-serif, system-ui;
+    background-color: #f8fafc;
+    color: #1e293b;
+    direction: rtl;
+    text-align: right;
+}
+
+/* تحسين مظهر الجداول في لوحة التحكم */
+table th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+}
+
+/* تأثيرات الانتقال السلس للأزرار والعناصر */
+button, input, select, textarea {
+    transition: all 0.2s ease-in-out;
+}
+
+/* تخصيص شريط التمرير */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

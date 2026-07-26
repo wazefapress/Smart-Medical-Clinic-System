@@ -70,7 +70,7 @@
         let globalFormsData = [];
 
         async function fetchAPI(password) {
-            const res = await fetch('http://localhost:3000/api/forms', { headers: { 'x-admin-password': password } });
+            const res = await fetch('https://smart-medical-clinic-system.onrender.com/api/forms', { headers: { 'x-admin-password': password } });
             return await res.json();
         }
 

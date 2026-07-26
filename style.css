@@ -41,6 +41,47 @@ button, input, select, textarea {
 ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
+header {
+            background: #333;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+        }
+/* الأعمدة الافتراضية للشاشات الكبيرة */
+        main {
+            flex: 3;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        aside {
+            flex: 1;
+            background: #e2e2e2;
+            padding: 20px;
+            border-radius: 5px;
+        }
+footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 20px;
+        }
+
+        /* --- استعلامات الوسائط (Media Queries) للشاشات الصغيرة --- */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column; /* تحويل الأعمدة إلى صف عمودي في الهواتف */
+            }
+        }
 .game-footer {
     text-align: center;
     padding: 20px 10px;

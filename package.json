@@ -7,7 +7,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@google/genai": "^0.1.1",
+    "@google/generative-ai": "^0.21.0",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -16,14 +16,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "keywords": [
-    "medical",
-    "clinic",
-    "gemini",
-    "sqlite",
-    "express"
-  ],
-  "author": "",
-  "license": "ISC"
+  }
 }

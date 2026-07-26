@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - السجلات الطبية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 p-4 md:p-8 flex items-center justify-center min-h-screen">
+
+    <div id="loginCard" class="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-emerald-700 text-center mb-6">تسجيل الدخول</h2>
+        <div class="mb-4">
+            <input type="password" id="passwordInput" class="w-full p-2 border rounded" placeholder="كلمة المرور...">
+        </div>
+        <button onclick="checkPassword()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded">دخول</button>
+        <p id="loginError" class="text-red-500 text-center text-sm mt-3 hidden">كلمة المرور خطأ</p>
+    </div>
+
+    <div id="dashboardContent" class="max-w-6xl w-full bg-white p-6 rounded-lg shadow-md hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-emerald-700">سجلات المرضى</h2>
+            <div class="flex gap-2">
+                <button onclick="exportToCSV()" class="bg-emerald-600 text-white px-4 py-2 rounded text-sm">تصدير CSV</button>
+                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded text-sm">خروج</button>
+            </div>
+        </div>
+
+        <input type="text" id="searchInput" oninput="filterForms()" placeholder="ابحث برقم الاستمارة أو الأعراض..." class="w-full p-2.5 border rounded-lg mb-4 text-sm">
+
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-200">
+                <thead>
+                    <tr class="bg-emerald-600 text-white text-sm">
+                        <th class="border p-3">الرقم</th>
+                        <th class="border p-3">العمر</th>
+                        <th class="border p-3">الأعراض</th>
+                        <th class="border p-3">التاريخ</th>
+                        <th class="border p-3">الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="formsList" class="text-sm"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- النافذة المنبثقة للتفاصيل -->
+    <div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white max-w-lg w-full p-6 rounded-lg shadow-xl relative">
+            <h3 class="text-xl font-bold text-emerald-700 mb-4">تفاصيل الحالة</h3>
+            <div class="space-y-3 text-sm text-gray-700">
+                <p><strong>العمر والجنس:</strong> <span id="modalAgeGender"></span></p>
+                <p><strong>الشدة:</strong> <span id="modalSeverity"></span></p>
+                <div>
+                    <strong>الأعراض:</strong>
+                    <p id="modalSymptoms" class="bg-gray-50 p-2 rounded border mt-1"></p>
+                </div>
+                <div>
+                    <strong>التحليل:</strong>
+                    <p id="modalAI" class="bg-emerald-50 p-2 rounded border mt-1 text-emerald-900"></p>
+                </div>
+            </div>
+            <button onclick="closeModal()" class="mt-6 bg-gray-500 text-white px-4 py-2 rounded text-sm">إغلاق</button>
+        </div>
+    </div>
+
+    <script>
+        let globalFormsData = [];
+
+        async function fetchAPI(password) {
+            const res = await fetch('http://localhost:3000/api/forms', { headers: { 'x-admin-password': password } });
+            return await res.json();
+        }
+
+        async function checkPassword() {
+            const pass = document.getElementById('passwordInput').value;
+            try {
+                const data = await fetchAPI(pass);
+                if (data.success) {
+                    sessionStorage.setItem('admin_pass', pass);
+                    showDashboard(data.data);
+                } else {
+                    document.getElementById('loginError').classList.remove('hidden');
+                }
+            } catch (e) { alert('خطأ في الاتصال'); }
+        }
+
+        function showDashboard(data) {
+            document.getElementById('loginCard').classList.add('hidden');
+            document.getElementById('dashboardContent').classList.remove('hidden');
+            globalFormsData = data;
+            displayTable(data);
+        }
+
+        function displayTable(data) {
+            const tbody = document.getElementById('formsList');
+            tbody.innerHTML = '';
+            data.forEach(form => {
+                const shortSymp = form.symptoms.length > 20 ? form.symptoms.substring(0, 20) + '...' : form.symptoms;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="border p-3 text-center">${form.id}</td>
+                        <td class="border p-3 text-center">${form.age} (${form.gender === 'male' ? 'ذكر' : 'أنثى'})</td>
+                        <td class="border p-3">${shortSymp}</td>
+                        <td class="border p-3 text-center">${form.created_at}</td>
+                        <td class="border p-3 text-center">
+                            <button onclick="openModal(${form.id})" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs">التفاصيل</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function filterForms() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = globalFormsData.filter(f => f.id.toString().includes(q) || f.symptoms.toLowerCase().includes(q));
+            displayTable(filtered);
+        }
+
+        function openModal(id) {
+            const f = globalFormsData.find(x => x.id === id);
+            document.getElementById('modalAgeGender').innerText = `${f.age} - ${f.gender === 'male' ? 'ذكر' : 'أنثى'}`;
+            document.getElementById('modalSeverity').innerText = f.severity;
+            document.getElementById('modalSymptoms').innerText = f.symptoms;
+            document.getElementById('modalAI').innerText = f.ai_analysis || 'لا يوجد';
+            document.getElementById('detailsModal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('detailsModal').classList.add('hidden'); }
+        function logout() { sessionStorage.removeItem('admin_pass'); location.reload(); }
+
+        function exportToCSV() {
+            let csv = "data:text/csv;charset=utf-8,\uFEFFID,Gender,Age,Symptoms,Severity,Date\n";
+            globalFormsData.forEach(r => csv += `"${r.id}","${r.gender}","${r.age}","${r.symptoms}","${r.severity}","${r.created_at}"\n`);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csv));
+            link.setAttribute("download", "records.csv");
+            link.click();
+        }
+
+        const savedPass = sessionStorage.getItem('admin_pass');
+        if (savedPass) fetchAPI(savedPass).then(res => { if(res.success) showDashboard(res.data); });
+    </script>
+</body>
+</html>

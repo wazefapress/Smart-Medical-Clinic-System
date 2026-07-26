@@ -79,6 +79,8 @@ app.get('/api/forms', (req, res) => {
     });
 });
 
-app.listen(port, () => {
-    console.log(`الخادم يعمل بنجاح على البورت: ${port}`);
-});
+//app.listen(port, () => {
+   // console.log(`الخادم يعمل بنجاح على البورت: ${port}`);
+//});
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, () => { console.log(`الخادم يعمل على المنفذ ${PORT}`); });

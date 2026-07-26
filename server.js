@@ -3,16 +3,16 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { GoogleGenAI } = require('@google/genai'); // استدعاء مكتبة جوجل الرسمية
+const { GoogleGenerativeAI } = require('@google/generative-ai'); // التحديث هنا
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // استخدام بورت Render التلقائي أو 3000 محلياً
 
 app.use(cors());
 app.use(bodyParser.json());
 
 // تهيئة عميل Gemini باستخدام المفتاح المخفي
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const db = new sqlite3.Database('./clinic.db');
 
@@ -33,7 +33,9 @@ app.post('/api/submit-form', async (req, res) => {
     const { gender, age, symptoms, severity } = req.body;
     
     try {
-        // نص التوجيه (System Instruction) والرسالة للنموذج المجاني gemini-2.5-flash
+        // اختيار النموذج المستقر
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
         const prompt = `أنت مساعد طبي ذكي. قم بتحليل بيانات وأعراض المريض التالية وقدم تقييماً مبدئياً ونصيحة طبية مختصرة باللغة العربية. تجنب إعطاء تشخيص نهائي، بل وجه المريض.
         
 بيانات المريض:
@@ -42,12 +44,9 @@ app.post('/api/submit-form', async (req, res) => {
 - شدة الأعراض: ${severity}
 - الأعراض المسجلة: ${symptoms}`;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash', // نموذج سريع ومجاني وممتاز في فهم النصوص العربية
-            contents: prompt,
-        });
-
-        const ai_analysis = response.text || "تم استلام البيانات ولكن تعذر توليد التحليل.";
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const ai_analysis = response.text() || "تم استلام البيانات ولكن تعذر توليد التحليل.";
 
         // حفظ البيانات في قاعدة البيانات SQLite
         db.run(`INSERT INTO medical_forms (gender, age, symptoms, severity, ai_analysis) VALUES (?, ?, ?, ?, ?)`,
@@ -81,5 +80,5 @@ app.get('/api/forms', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`الخادم يعمل بنجاح على الرابط: http://localhost:${port}`);
+    console.log(`الخادم يعمل بنجاح على البورت: ${port}`);
 });

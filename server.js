@@ -68,18 +68,3 @@ app.get('/api/forms', (req, res) => {
     const password = req.headers['x-admin-password'];
     
     if (password !== 'admin123') {
-        return res.status(401).json({ success: false, message: 'كلمة المرور غير صحيحة.' });
-    }
-
-    db.all(`SELECT * FROM medical_forms ORDER BY created_at DESC`, [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: err.message });
-        }
-        res.status(200).json({ success: true, data: rows });
-    });
-});
-
-// تشغيل الخادم بالطريقة الصحيحة المتوافقة مع محلياً و Render
-app.listen(port, () => {
-    console.log(`الخادم يعمل بنجاح على البورت: ${port}`);
-});

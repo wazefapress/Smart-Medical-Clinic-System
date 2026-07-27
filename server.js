@@ -34,7 +34,8 @@ app.post('/api/submit-form', async (req, res) => {
     
     try {
         // اختيار النموذج المستقر
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
         const prompt = `أنت مساعد طبي ذكي. قم بتحليل بيانات وأعراض المريض التالية وقدم تقييماً مبدئياً ونصيحة طبية مختصرة باللغة العربية. تجنب إعطاء تشخيص نهائي، بل وجه المريض.
         

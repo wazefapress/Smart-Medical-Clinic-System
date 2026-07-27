@@ -62,7 +62,6 @@ app.post('/api/submit-form', async (req, res) => {
         res.status(500).json({ success: false, message: "حدث خطأ أثناء الاتصال بخدمة الذكاء الاصطناعي." });
     }
 });
-
 // مسار جلب السجلات للوحة التحكم (محمي بكلمة مرور)
 app.get('/api/forms', (req, res) => {
     const password = req.headers['x-admin-password'];
@@ -79,8 +78,7 @@ app.get('/api/forms', (req, res) => {
     });
 });
 
-//app.listen(port, () => {
-   // console.log(`الخادم يعمل بنجاح على البورت: ${port}`);
-//});
-const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => { console.log(`الخادم يعمل على المنفذ ${PORT}`); });
+// تشغيل الخادم بالطريقة الصحيحة المتوافقة مع محلياً و Render
+app.listen(port, () => {
+    console.log(`الخادم يعمل بنجاح على البورت: ${port}`);
+});

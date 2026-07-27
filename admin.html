@@ -3,46 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <title>لوحة التحكم - السجلات الطبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 p-4 md:p-8 flex items-center justify-center min-h-screen">
+<body class="bg-gray-50 text-gray-800 p-4 md:p-8 flex flex-col items-center justify-between min-h-screen">
 
-    <div id="loginCard" class="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-emerald-700 text-center mb-6">تسجيل الدخول</h2>
-        <div class="mb-4">
-            <input type="password" id="passwordInput" class="w-full p-2 border rounded" placeholder="كلمة المرور...">
-        </div>
-        <button onclick="checkPassword()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded">دخول</button>
-        <p id="loginError" class="text-red-500 text-center text-sm mt-3 hidden">كلمة المرور خطأ</p>
-    </div>
-
-    <div id="dashboardContent" class="max-w-6xl w-full bg-white p-6 rounded-lg shadow-md hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-emerald-700">سجلات المرضى</h2>
-            <div class="flex gap-2">
-                <button onclick="exportToCSV()" class="bg-emerald-600 text-white px-4 py-2 rounded text-sm">تصدير CSV</button>
-                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded text-sm">خروج</button>
+    <div class="w-full flex flex-col items-center justify-center my-auto">
+        <!-- بطاقة تسجيل الدخول -->
+        <div id="loginCard" class="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-emerald-700 text-center mb-6">تسجيل الدخول</h2>
+            <div class="mb-4">
+                <input type="password" id="passwordInput" class="w-full p-2 border rounded" placeholder="كلمة المرور...">
             </div>
+            <button onclick="checkPassword()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded">دخول</button>
+            <p id="loginError" class="text-red-500 text-center text-sm mt-3 hidden">كلمة المرور خطأ</p>
         </div>
 
-        <input type="text" id="searchInput" oninput="filterForms()" placeholder="ابحث برقم الاستمارة أو الأعراض..." class="w-full p-2.5 border rounded-lg mb-4 text-sm">
+        <!-- محتوى لوحة التحكم -->
+        <div id="dashboardContent" class="max-w-6xl w-full bg-white p-6 rounded-lg shadow-md hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-emerald-700">سجلات المرضى</h2>
+                <div class="flex gap-2">
+                    <button onclick="exportToCSV()" class="bg-emerald-600 text-white px-4 py-2 rounded text-sm">تصدير CSV</button>
+                    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded text-sm">خروج</button>
+                </div>
+            </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse border border-gray-200">
-                <thead>
-                    <tr class="bg-emerald-600 text-white text-sm">
-                        <th class="border p-3">الرقم</th>
-                        <th class="border p-3">العمر</th>
-                        <th class="border p-3">الأعراض</th>
-                        <th class="border p-3">التاريخ</th>
-                        <th class="border p-3">الإجراء</th>
-                    </tr>
-                </thead>
-                <tbody id="formsList" class="text-sm"></tbody>
-            </table>
+            <input type="text" id="searchInput" oninput="filterForms()" placeholder="ابحث برقم الاستمارة أو الأعراض..." class="w-full p-2.5 border rounded-lg mb-4 text-sm">
+
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse border border-gray-200">
+                    <thead>
+                        <tr class="bg-emerald-600 text-white text-sm">
+                            <th class="border p-3">الرقم</th>
+                            <th class="border p-3">العمر والجنس</th>
+                            <th class="border p-3">الأعراض</th>
+                            <th class="border p-3">التاريخ</th>
+                            <th class="border p-3">الإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="formsList" class="text-sm"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -69,8 +73,13 @@
     <script>
         let globalFormsData = [];
 
+        // تحديد رابط الخادم تلقائياً (محلي أو سحابي)
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:3000/api/forms' 
+            : 'https://smart-medical-clinic-system.onrender.com/api/forms';
+
         async function fetchAPI(password) {
-            const res = await fetch('https://smart-medical-clinic-system.onrender.com/api/forms', { headers: { 'x-admin-password': password } });
+            const res = await fetch(API_URL, { headers: { 'x-admin-password': password } });
             return await res.json();
         }
 
@@ -84,7 +93,10 @@
                 } else {
                     document.getElementById('loginError').classList.remove('hidden');
                 }
-            } catch (e) { alert('خطأ في الاتصال'); }
+            } catch (e) { 
+                alert('خطأ في الاتصال بالخادم'); 
+                console.error(e);
+            }
         }
 
         function showDashboard(data) {
@@ -97,14 +109,18 @@
         function displayTable(data) {
             const tbody = document.getElementById('formsList');
             tbody.innerHTML = '';
+            if(!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-500">لا توجد سجلات متاحة حالياً</td></tr>`;
+                return;
+            }
             data.forEach(form => {
-                const shortSymp = form.symptoms.length > 20 ? form.symptoms.substring(0, 20) + '...' : form.symptoms;
+                const shortSymp = form.symptoms && form.symptoms.length > 20 ? form.symptoms.substring(0, 20) + '...' : (form.symptoms || '');
                 tbody.innerHTML += `
                     <tr>
                         <td class="border p-3 text-center">${form.id}</td>
                         <td class="border p-3 text-center">${form.age} (${form.gender === 'male' ? 'ذكر' : 'أنثى'})</td>
                         <td class="border p-3">${shortSymp}</td>
-                        <td class="border p-3 text-center">${form.created_at}</td>
+                        <td class="border p-3 text-center">${form.created_at || '---'}</td>
                         <td class="border p-3 text-center">
                             <button onclick="openModal(${form.id})" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs">التفاصيل</button>
                         </td>
@@ -114,16 +130,17 @@
 
         function filterForms() {
             const q = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = globalFormsData.filter(f => f.id.toString().includes(q) || f.symptoms.toLowerCase().includes(q));
+            const filtered = globalFormsData.filter(f => f.id.toString().includes(q) || (f.symptoms && f.symptoms.toLowerCase().includes(q)));
             displayTable(filtered);
         }
 
         function openModal(id) {
             const f = globalFormsData.find(x => x.id === id);
+            if (!f) return;
             document.getElementById('modalAgeGender').innerText = `${f.age} - ${f.gender === 'male' ? 'ذكر' : 'أنثى'}`;
-            document.getElementById('modalSeverity').innerText = f.severity;
-            document.getElementById('modalSymptoms').innerText = f.symptoms;
-            document.getElementById('modalAI').innerText = f.ai_analysis || 'لا يوجد';
+            document.getElementById('modalSeverity').innerText = f.severity || 'غير محدد';
+            document.getElementById('modalSymptoms').innerText = f.symptoms || '';
+            document.getElementById('modalAI').innerText = f.ai_analysis || 'لا يوجد تحليل';
             document.getElementById('detailsModal').classList.remove('hidden');
         }
 
@@ -132,26 +149,32 @@
 
         function exportToCSV() {
             let csv = "data:text/csv;charset=utf-8,\uFEFFID,Gender,Age,Symptoms,Severity,Date\n";
-            globalFormsData.forEach(r => csv += `"${r.id}","${r.gender}","${r.age}","${r.symptoms}","${r.severity}","${r.created_at}"\n`);
+            globalFormsData.forEach(r => csv += `"${r.id}","${r.gender}","${r.age}","${r.symptoms || ''}","${r.severity || ''}","${r.created_at || ''}"\n`);
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csv));
             link.setAttribute("download", "records.csv");
             link.click();
         }
 
+        // فحص الجلسة السابقة عند تحميل الصفحة تلقائياً
         const savedPass = sessionStorage.getItem('admin_pass');
-        if (savedPass) fetchAPI(savedPass).then(res => { if(res.success) showDashboard(res.data); });
+        if (savedPass) {
+            fetchAPI(savedPass).then(res => { 
+                if(res.success) showDashboard(res.data); 
+            }).catch(err => console.log('جلسة منتهية أو خطأ اتصال تلقائي'));
+        }
     </script>
-    <footer class=footer">
-                <p>تم التطوير والتصميم بكل ⚡ بواسطة <a href="https://www.patreon.com/haythamzeidan" target="_blank" style="color: #87CEEB; text-decoration: none;">هيثم زيدان</a> &copy; 2026</p>
-                <a href="https://github.com/wazefapress/Smart-Medical-Clinic-System" target="_blank" aria-label="GitHub">
-                    <i class="fa-brands fa-github" style="font-size: 24px; color: #333;"></i>
-                </a>
-                <p>
-                    <a href="https://www.patreon.com/haythamzeidan" target="_blank" aria-label="Patreon" style="text-decoration: none; color: #FF424D; font-size: 18px;">
-                        <i class="fa-brands fa-patreon"></i> ادعمني على Patreon
-                    </a>
-                </p>
-            </footer>
+
+    <footer class="footer mt-8 text-center text-sm text-gray-600 py-4">
+        <p>تم التطوير والتصميم بكل ⚡ بواسطة <a href="https://www.patreon.com/haythamzeidan" target="_blank" style="color: #0284c7; text-decoration: none;">هيثم زيدان</a> &copy; 2026</p>
+        <div class="flex justify-center gap-4 mt-2">
+            <a href="https://github.com/wazefapress/Smart-Medical-Clinic-System" target="_blank" aria-label="GitHub">
+                <i class="fa-brands fa-github" style="font-size: 20px; color: #333;"></i>
+            </a>
+            <a href="https://www.patreon.com/haythamzeidan" target="_blank" aria-label="Patreon" style="text-decoration: none; color: #FF424D;">
+                <i class="fa-brands fa-patreon"></i> ادعمني على Patreon
+            </a>
+        </div>
+    </footer>
 </body>
 </html>
